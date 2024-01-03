@@ -13,6 +13,16 @@ type LoginStatus struct {
 	} `json:"data"`
 }
 
+type PhoneLogin struct {
+	Code   int    `json:"code"`
+	Cookie string `json:"cookie"`
+}
+
+type EmailLogin struct {
+	Code   int    `json:"code"`
+	Cookie string `json:"cookie"`
+}
+
 type QrKey struct {
 	Data struct {
 		Code   int    `json:"code"`

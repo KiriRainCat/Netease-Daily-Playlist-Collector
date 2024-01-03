@@ -40,8 +40,36 @@ func main() {
 		Get("/login/status")
 
 	if user.Data.Account.Id == 0 {
-		fmt.Println("登录状态不存在或过期，请扫码登录喵~")
-		qrLogin()
+		fmt.Println("登录状态不存在或过期，请选择登录方式喵~ (输入 1 到 4)")
+		fmt.Println("1. 扫码登录")
+		fmt.Println("2. 手机验证码登录")
+		fmt.Println("3. 手机密码登录")
+		fmt.Println("4. 邮箱密码登录")
+
+		func() {
+			for i := 0; i < 1; {
+				var choice string
+				fmt.Scanln(&choice)
+
+				// 校验输入
+				switch choice {
+				case "1":
+					qrLogin()
+					return
+				case "2":
+					phoneLogin()
+					return
+				case "3":
+					phonePwdLogin()
+					return
+				case "4":
+					emailPwdLogin()
+					return
+				default:
+					fmt.Println("输入错误，请重新输入喵~")
+				}
+			}
+		}()
 	}
 
 	//* ------------------------------- 添加今日推荐到歌单 ------------------------------ *//
@@ -104,6 +132,19 @@ func main() {
 	}
 }
 
+func storeCookie(raw string) {
+	for _, cookie := range strings.Split(raw, ";") {
+		if strings.Contains(cookie, "MUSIC_U") {
+			api.SetQueryParam("cookie", cookie)
+			err := os.WriteFile("cookie.txt", []byte(cookie), os.ModeDevice)
+			if err != nil {
+				panic(err)
+			}
+			break
+		}
+	}
+}
+
 func genQr() string {
 	var key QrKey
 	api.R().
@@ -144,15 +185,75 @@ func qrLogin() {
 				fmt.Print(" → 请重新扫码登录呐 = =")
 				key = genQr()
 			} else {
-				for _, cookie := range strings.Split(status.Cookie, ";") {
-					if strings.Contains(cookie, "MUSIC_U") {
-						api.SetQueryParam("cookie", status.Cookie)
-						os.WriteFile("cookie.txt", []byte(status.Cookie), os.ModeDevice)
-						break
-					}
-				}
+				storeCookie(status.Cookie)
 				break
 			}
 		}
 	}
+}
+
+func phoneLogin() {
+	var phone string
+	fmt.Print("请输入手机号码: ")
+	fmt.Scanln(&phone)
+
+	// 调用网易云接口发送验证码
+	api.R().
+		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
+		SetQueryParam("phone", phone).
+		Get("/captcha/sent")
+
+	fmt.Print("请输入验证码: ")
+	var code string
+	fmt.Scanln(&code)
+
+	var res PhoneLogin
+	api.R().
+		SetResult(&res).
+		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
+		SetQueryParam("phone", phone).
+		SetQueryParam("captcha", code).
+		Get("/login/cellphone")
+
+	storeCookie(res.Cookie)
+}
+
+func phonePwdLogin() {
+	var phone string
+	fmt.Print("请输入手机号码: ")
+	fmt.Scanln(&phone)
+
+	var pwd string
+	fmt.Print("请输入密码: ")
+	fmt.Scanln(&pwd)
+
+	var res PhoneLogin
+	api.R().
+		SetResult(&res).
+		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
+		SetQueryParam("phone", phone).
+		SetQueryParam("password", pwd).
+		Get("/login/cellphone")
+
+	storeCookie(res.Cookie)
+}
+
+func emailPwdLogin() {
+	var email string
+	fmt.Print("请输入网易邮箱: ")
+	fmt.Scanln(&email)
+
+	var pwd string
+	fmt.Print("请输入密码: ")
+	fmt.Scanln(&pwd)
+
+	var res PhoneLogin
+	api.R().
+		SetResult(&res).
+		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
+		SetQueryParam("email", email).
+		SetQueryParam("password", pwd).
+		Get("/login")
+
+	storeCookie(res.Cookie)
 }
