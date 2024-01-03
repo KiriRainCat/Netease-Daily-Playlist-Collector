@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +14,17 @@ import (
 
 var api *resty.Client
 
+var user LoginStatus
+
 func init() {
 	api = resty.New()
 	api.BaseURL = "https://netease.kiriraincat.eu.org"
 
-	data, err := os.ReadFile("cookie.txt")
+	cwd, _ := os.Executable()
+	data, err := os.ReadFile(path.Dir(cwd) + "/cookie.txt")
+	fmt.Println(data)
 	if err == nil {
-		api.SetQueryParam("cookie", url.QueryEscape(string(data)))
+		api.SetQueryParam("cookie", string(data))
 	}
 
 	api.OnError(func(req *resty.Request, err error) {
@@ -33,7 +37,6 @@ func main() {
 	//* -------------------------------- 检查登录状态 -------------------------------- *//
 	fmt.Println("检查登录状态中...")
 
-	var user LoginStatus
 	api.R().
 		SetResult(&user).
 		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
@@ -136,12 +139,21 @@ func storeCookie(raw string) {
 	for _, cookie := range strings.Split(raw, ";") {
 		if strings.Contains(cookie, "MUSIC_U") {
 			api.SetQueryParam("cookie", cookie)
-			err := os.WriteFile("cookie.txt", []byte(cookie), os.ModeDevice)
-			if err != nil {
-				panic(err)
-			}
+			cwd, _ := os.Executable()
+			os.WriteFile(path.Dir(cwd)+"/cookie.txt", []byte(cookie), 0777)
 			break
 		}
+	}
+
+	api.R().
+		SetResult(&user).
+		SetQueryParam("timestamp", fmt.Sprint(time.Now().Unix())).
+		Get("/login/status")
+
+	if user.Data.Account.Id == 0 {
+		fmt.Println("登录异常")
+		fmt.Println("\n将在 5 秒后自动退出...")
+		os.Exit(0)
 	}
 }
 
