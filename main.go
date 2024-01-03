@@ -22,7 +22,6 @@ func init() {
 
 	cwd, _ := os.Executable()
 	data, err := os.ReadFile(path.Dir(cwd) + "/cookie.txt")
-	fmt.Println(data)
 	if err == nil {
 		api.SetQueryParam("cookie", string(data))
 	}
