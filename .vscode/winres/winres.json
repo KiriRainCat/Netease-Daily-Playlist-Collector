@@ -1,0 +1,47 @@
+{
+  "RT_GROUP_ICON": {
+    "APP": {
+      "0000": ["icon.png"]
+    }
+  },
+  "RT_MANIFEST": {
+    "#1": {
+      "2052": {
+        "description": "用于自动收集网易云音乐的每日推荐曲目并添加到歌单",
+        "minimum-os": "win7",
+        "execution-level": "highest",
+        "ui-access": false,
+        "auto-elevate": false,
+        "dpi-awareness": "system",
+        "disable-theming": false,
+        "disable-window-filtering": false,
+        "high-resolution-scrolling-aware": false,
+        "ultra-high-resolution-scrolling-aware": false,
+        "long-path-aware": false,
+        "printer-driver-isolation": false,
+        "gdi-scaling": false,
+        "segment-heap": false,
+        "use-common-controls-v6": false
+      }
+    }
+  },
+  "RT_VERSION": {
+    "#1": {
+      "0000": {
+        "fixed": {
+          "file_version": "0.1.1.0"
+        },
+        "info": {
+          "2052": {
+            "CompanyName": "柒夜雨猫",
+            "FileDescription": "用于自动收集网易云音乐的每日推荐曲目并添加到歌单",
+            "LegalCopyright": "© KiriRainCat",
+            "OriginalFilename": "netease-daily-playlist.exe",
+            "ProductName": "网易云曲目收集器",
+            "ProductVersion": "0.1.1.0"
+          }
+        }
+      }
+    }
+  }
+}
